@@ -18,6 +18,13 @@ public static class TripLoader
     public static IEnumerable<CsvTrip> ReadFolder(string path) =>
         Directory.EnumerateFiles(path, "*.csv").SelectMany(ReadFile);
 
+    public static List<CsvWeather> LoadWeather(string path)
+    {
+        using var reader = new StreamReader(path);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        return csv.GetRecords<CsvWeather>().ToList();
+    }
+
     public static Trip ToTrip(CsvTrip csvTrip)
     {
         Trip trip = new Trip();
