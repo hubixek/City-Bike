@@ -26,13 +26,30 @@ public static class Queries
    {
       var res = trips.Where(t => t.StartStationId != null && t.EndStationId != null)
          .GroupBy(t => (t.StartStationId, t.EndStationId))
-         .Select(t =>(FromId: t.Key.StartStationId, ToId: t.Key.EndStationId, Count: t.Count()))
+         .Select(t => (FromId: t.Key.StartStationId, ToId: t.Key.EndStationId, Count: t.Count()))
          .OrderByDescending(t => t.Count).Take(10)
          .Join(stations.Values, t => t.FromId, s => s.Id,
             (t, s) => (From: s.Name, t.ToId, t.Count))
          .Join(stations.Values, t => t.ToId, s => s.Id,
-               (t, s) => (t.From, To: s.Name, t.Count))
+            (t, s) => (t.From, To: s.Name, t.Count))
          .ToList();
       return res;
    }
+
+   public static List<(string Name, int Out, int In, int Net)> StationBalance(List<Trip> trips,
+         Dictionary<string, Station> stations)
+      {
+         var dep = trips.Where(t => t.StartStationId != null)
+            .GroupBy(t => t.StartStationId)
+            .Select(t => (Id: t.Key, Out: t.Count()));
+         var arr = trips.Where(t => t.EndStationId != null)
+            .GroupBy(t => t.EndStationId)
+            .Select(t => (Id: t.Key, In: t.Count()));
+         var res = dep.Join(arr, d => d.Id, a => a.Id, (d, a) => (d.Id, d.Out, a.In, Net: a.In - d.Out))
+            .OrderByDescending(t => t.Net)
+            .Select(t => (stations[t.Id!].Name, t.Out, t.In, t.Net))
+            .ToList();
+         return res;
+      }
+   
 }
