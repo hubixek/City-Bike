@@ -51,5 +51,24 @@ public static class Queries
             .ToList();
          return res;
       }
-   
+   public static List<(string Category, int Days, double AvgRides)> WeatherImpact(
+      List<Trip> trips, List<CsvWeather> weather)
+   {
+      return trips
+         .GroupBy(t => t.StartedAt.Date)
+         .Select(t => (Date: t.Key, Count: t.Count()))
+         .Join(weather, d => d.Date, w => w.Date, (d, w) => (d.Count, w.Rain))
+         .GroupBy(t => t.Rain > 1 ? "Deszczowe" : "Suche")
+         .Select(t => (Category: t.Key, Days: t.Count(), AvgRides: t.Average(t => t.Count)))
+         .ToList();
+   }
+   public static List<(int Hour, int Total, double ElectricPercent)> TypeShareByHour(List<Trip> trips)
+   {
+      return trips
+         .GroupBy(t => t.StartedAt.Hour)
+         .Select(t => (Hour: t.Key, Total: t.Count(),
+            ElectricPercent: 100.0 * t.Count(t => t.RideableType == "electric_bike") / t.Count()))
+         .OrderBy(t => t.Hour)
+         .ToList();
+   }
 }
