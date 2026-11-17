@@ -6,7 +6,10 @@ var sw = System.Diagnostics.Stopwatch.StartNew();
 var trips = TripLoader.LoadTrips(folder);
 var stations = TripLoader.LoadStations(folder);
 
-Console.WriteLine($"Przejazdy po walidacji: {trips.Count}");
-Console.WriteLine($"Odrzucone: {5088365 - trips.Count}");
-Console.WriteLine($"Stacje: {stations.Count}");
-Console.WriteLine($"Czas wczytywania: {sw.Elapsed.TotalSeconds:F1} s");
+foreach (var s in Queries.Top5BusiestStation(trips, stations))
+    Console.WriteLine($"{s.Name} | {s.Hour:dd.MM HH:mm} | {s.Count}");
+
+Console.WriteLine();
+Console.WriteLine("Top 10 tras:");
+foreach (var r in Queries.Top10PopularRoutes(trips, stations))
+    Console.WriteLine($"{r.From} → {r.To} | {r.Count}");
