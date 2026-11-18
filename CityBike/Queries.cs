@@ -62,6 +62,20 @@ public static class Queries
          .Select(t => (Category: t.Key, Days: t.Count(), AvgRides: t.Average(t => t.Count)))
          .ToList();
    }
+
+   public static List<(int Count, double temp, double AvgRides)> TemperatureImpact(List<Trip> trips, List<CsvWeather> weather)
+   {
+      var t = trips
+         .GroupBy(t => t.StartedAt.Date)
+         .Select(t => (Date: t.Key, Count: t.Count()));
+      var res = t.Join(weather, d => d.Date, w => w.Date,
+            (d, w) => (Date: d.Date, Ilosc: d.Count, Temp: w.Temp))
+         .GroupBy(t => Math.Floor(t.Temp/3)*3)
+         .Select(t => (Count: t.Count(), temp: t.Key, AvgRides: t.Average(t => t.Ilosc)))
+         .OrderBy(t => t.temp)
+         .ToList();
+      return res;
+   }
    public static List<(int Hour, int Total, double ElectricPercent)> TypeShareByHour(List<Trip> trips)
    {
       return trips
